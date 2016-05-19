@@ -19,6 +19,24 @@ headers_base = {
     'Referer': 'https://www.zhihu.com/',
 }
 
+path = "e:\\zhihu\\"
+file = "e:\\pic.txt"
+base = "https://www.zhihu.com"
+
+def is_path_exist():
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+def is_file_exist():
+    if not os.access(file, os.F_OK):
+        try:
+            f = open(file,'w')
+        except IOError:
+            os.mkdir(os.path.dirname(file))
+            f = open(file,'w')
+        finally:
+            f.close()  
+
 
 #define  find_what
 def download(url):
@@ -29,12 +47,11 @@ def download(url):
         spoon = BeautifulSoup(d.text,"lxml")
         pics = spoon.find_all('img',class_="origin_image")
         for pic in pics:
-            with open("e:\\pic.txt","at",encoding="utf-8") as f:
+            with open(file,"at",encoding="utf-8") as f:
                 print(pic['data-original'], file=f)
             save_img(pic['data-original'])
 
 def save_img(url):
-    path = "e:\\zhihu\\"
     img = requests.get(url)
     if img.status_code == 200:
         with open(path+url.split('/')[-1],'wb' ) as f:
@@ -49,10 +66,10 @@ def save_img(url):
 def has(tag):
     return tag.has_attr("href") and tag.has_attr("class")
 
-if __name__ == '__main__':
-    save_img("https://pic1.zhimg.com/fdcaafec43ef74c02bd6cfbd6df73514_r.png");
-    url = "https://www.zhihu.com"
-    r = requests.get("https://www.zhihu.com/collection/26815754",headers = headers_base)
+def main(url):
+    is_path_exist()
+    is_file_exist()
+    r = requests.get(url,headers = headers_base)
     if r.status_code == 200:
         #r.decode("utf-8")
         #print(t.text)
@@ -60,5 +77,8 @@ if __name__ == '__main__':
         tag = soup.find_all(href=True,class_="toggle-expand")
         for x in tag:
             #time.sleep(5)
-            download(url+x['href'])
+            download(base+x['href'])
+    
+if __name__ == '__main__':
+    main("https://www.zhihu.com/collection/26815754")
     
